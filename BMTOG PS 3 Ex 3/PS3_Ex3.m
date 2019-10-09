@@ -140,7 +140,7 @@ end
 %=================== Compute P(t_0,U_k) iteratively ======================%
 
 % Store the increments delta(U_n-1,U_n), n > 0 (U_0 = t_0)
-Delta_U = [delta(t_0,U(1)); days(diff(U))/360];
+Delta_U = days(diff([t_0;U]))/360;
 
 for n = 3:length(U)
     
@@ -185,7 +185,7 @@ shift = length(S) + length(T) - 1;
      % Column indices corresponding to the cash flows
      id_tmp = id(U(U <= U_quoted(k)));
 
-     % Add the cash flows (note that c_k = 1 + delta * K) 
+     % Add the cash flows (add one to the last cash flow c_k) 
      C(k + shift,id_tmp) = Delta_U(1:id_U(k)).* R_swap(id_U(k))...
                          + (id_tmp == id_tmp(end));
  end
@@ -204,7 +204,7 @@ e_1 = (1:length(M) == 1)';
 
 A = C * (M \ inv(W));
 
-% Estimation of the vector of weighted increments
+% Estimation of the weighted increments
 Delta_star = A' * ((A * A') \( p - C * (M \ e_1)));
 
 % Resulting discount curve
@@ -214,7 +214,7 @@ Table.DC_pseudo_inverse = M \ (W \ Delta_star + e_1)
 %================================ Plots  =================================%
 %=========================================================================%
 
-% Array of Time to Maturity
+% Array of Time to Maturities
 TTM = delta(t_0,[t_0;Table.Dates]);
 
 %============================ Discount Curves ============================%
@@ -232,14 +232,13 @@ title('Discount Curves')
 
 %====================== Forward and LIBOR curves =========================%
  
-% One should add F(t_0,t_0,S_1) = L(t_0,S_1)
-
 % Function computing the forward curve for a given discount curve
+% (at t_0, simply add F(t_0,t_0,S_1) = L(t_0,S_1))
 Fwd_curve = @(DC) 100.* [L_S(1); (1/DC(1)-1)/delta(t_0,Table.Dates(1));
                                  (DC(1:end-1)./DC(2:end)- 1)./ delta_];
                     
 % Function computing the LIBOR curve for a given discount curve
-LIB_curve = @(DC) 100 .*[L_S(1); (1./DC - 1)./ TTM(2:end)];
+LIB_curve = @(DC) 100 .* [L_S(1); (1./DC - 1)./ TTM(2:end)];
 
 dc = {'DC_bootstrap','DC_pseudo_inverse'}; style = {'o-','o:'};
 
