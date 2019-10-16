@@ -8,6 +8,8 @@
 
 close all; clear; clc; format short; warning('off')
 
+%==================================== (a) ================================%
+
 %% 0. Setup
 
 % Load the quoted prices
@@ -18,104 +20,98 @@ opts.Sheet = "Sheet1";
 opts.DataRange = "A22:K352";
 
 % Specify column names and types
-opts.VariableNames = ["Date", "CHFConfBonds2y", "CHFConfBonds3y", "CHFConfBonds4y", "CHFConfBonds5y", "CHFConfBonds7y", "CHFConfBonds10y", "CHFConfBonds20y","CHFConfBonds30y", "EURGermanBonds10y", "USDUSBonds10y"];
-opts.VariableTypes = ["datetime", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double"];
+opts.VariableNames = ["Date", "CHFConfBonds2y", "CHFConfBonds3y",...
+                      "CHFConfBonds4y", "CHFConfBonds5y", "CHFConfBonds7y",...
+                      "CHFConfBonds10y", "CHFConfBonds20y","CHFConfBonds30y",....
+                      "EURGermanBonds10y", "USDUSBonds10y"];
+opts.VariableTypes = ["datetime", "double", "double", "double",...
+    "double", "double", "double", "double", "double", "double", "double"];
 
 % Import the data
 data = readtable("statmon_E4_M1_M.xls", opts, "UseExcel", false);
 
-% Yield in July 2015
-yield = data(331,2:end-2);
+% Yield in July 2015 
+Y = data{end,2:end-2}';
 
-% Array of time 
-time = [0,2,3,4,5,7,10,20,30]';
-T = (0:0.1:30);
-yield = [time(2:end),yield{1,:}'];
-
+% Array of time to maturities
+T = [2,3,4,5,7,10,20,30]'; N_T = length(T);
 
 %% I. Representer Theorem Smoothing Method
+
 % Three different alphas to test
-alphas = [0.01 0.1 1];
+alpha = [0.01 0.1 1]; N_alpha = length(alpha);
 
-% Start plot
-fig = figure(1);
-plot(yield(:,1),yield(:,2),'o')
-xlabel('T')
-ylabel('Yield Rate'); 
-Legend{1} = sprintf('Data');
-hold on
+% Array of optimal betas
+Beta = zeros(length(Y) + 1, N_alpha); 
 
-% Loop over the three alphas
-for s = 1:3
-    
-    % Scalar Product <h_ih_j>
-    hh = zeros(length(time),length(time));
-    
-    for l = 1:length(time)
-        for k = 1:length(time)
-            hh(l,k) = time(l)*time(k) + min(time(l),time(k))*time(l)*time(k) ...
-                - 1/2*min(time(l),time(k))^2*(time(l)+time(k)) ...
-                + 1/3*min(time(l),time(k))^3;
-        end
-    end
+% Vectorize the linear system of equations on slide 168:
+% Find beta in R^{n+1} s.t. A * beta = C 
+% (please refer to the report for the definition of A and C)
 
-    % Matrix A - Found by creating a linear system of equation from the 
-    % Represention Theorem (slide 168 -IRCRM_slides_20190903.pdf )
-    A = zeros(9,9);
-    % First row: Ti
-    for i =1:9
-        A(1,i)= 1*time(i);
-    end
-    % First column: alpha* Ti
-    for i = 1:9
-        A(i,1)=alphas(s)*time(i);
-    end
-    % Rest : if i==j, 1+ alpha * <h_i,h_j>, alpha * <h_i,h_j> otherwise
-    for i =2:9
-        for j =2:9
-            if i==j
-                A(i,j)= 1+alphas(s)*hh(i,j);
-            else
-                A(i,j)= alphas(s)*hh(i,j);
-            end
-        end
-    end
+% Matrix containing the scalar products <h_i,h_j>_H
+H = (T * T') .* (1 + min(T,T')) - 1/2 * min(T,T').^2 .* (T + T')...
+  + 1/3 * min(T,T').^3;
 
-    % Array of result
-    C = zeros(9,1);
-    for i = 2:9
-        C(i,1) = alphas(s)*yield(i-1,2)*time(i);
-    end
-    
-    % Array of betas
-    Betas = A\C;
+C = [0;Y.*T];
 
+% Function handle for the quadratic splines
+h = @(u,T) T + u .* (T - u/2) .* (u <= T) + 1/2 * T.^2 .* ((u > T) );
 
-    for k = 1:8
-        for u = 1:300
-            if u>=0
-                % smoothed splines
-            h(k,u) = time(k+1) + time(k+1)*min(u*0.1,time(k+1)) - 1/2*min(u*0.1,time(k+1))^2;
-            else
-            h(k,u)= 0;
-            end
-        end
-    end
+%% Derive the betas and yield curve for each alpha
 
-    % Forward curve function
-    F(1)=Betas(1);
-    for u =2:300
-        F(u) = Betas(1)+Betas(2:9)'*h(:,u-1);
-    end
-    % yield curve - PAS JUSTE
-    for u =1:300
-        Y(u) = 1/u*F(1)+Betas(2:9)'*sum(h(:,u),2);
-     end
- 
-    Legend{s+1} = sprintf('alpha = %2.2f',alphas(s))
-    plot(T(2:end),F,'-')
+figure
+
+for i = 1:N_alpha
+
+% Construct the matrix A 
+A = [[0;T],[T';(H + eye(N_T)/alpha(i))]];
+
+% Solve for beta
+Beta(:,i) = A\C;
+
+% Array of integrals of h_i(u) between 0 and some time s > 0
+h_int = @(s,T) (T * s + 1/2 * T * s^2 - 1/6 * s^3 ) .* (s <= T)...
+      + (s * (T + T.^2 / 2)- 1/6 * T.^3) .* (s >  T);
+  
+% Resulting yield curve [%]
+y = @(s) dot(Beta(:,i), [1;1/s * h_int(s,T)]);
+
+% Plot
+fplot(y, [0,T(end)],'Linewidth',1.2); hold on
+title('Yield Curves')
+
+Legend{i} = "\alpha =" + num2str(alpha(i));
+
 end
+
+% Add the quoted yields 
+plot(T,Y,'d','LineWidth',1.7); 
+xlabel('Time to Maturity')  ; ylabel('Yield Rate [%]'); 
+
+Legend{N_alpha + 1 } = sprintf('Data');
 legend(Legend,'Location','Best'); 
+
+%% Instantaneous forward curve
+
+% Anonymous function for the forward curve
+f = @(u,beta) dot(beta, [1;h(u,T)]);
+
+figure
+
+for i = 1: N_alpha
+    
+fplot(@(u) f(u,Beta(:,i)), [0,T(end)],'Linewidth',1.2); hold on
+
+title('Instantaneous Forward Curves')
+
+Legend{i} = "\alpha =" + num2str(alpha(i));
+
+end
+
+xlabel('Time to Maturity')  ; ylabel('Instantaneous Forward Rate [%]'); 
+legend(Legend,'Location','Best'); ylim([-1,1.4])
+
+%==================================== (b) ================================%
 
 %% II. Monthly Changes
 % Number of Months
@@ -141,7 +137,7 @@ display(covarianceMatrix)
 
 % Eigenvalues and Eigenvectors
 [V,D]=eig(covarianceMatrix);
-[sortedSums, sortOrder] = sort(sum(D, 1), 'Descend')
+[sortedSums, sortOrder] = sort(sum(D, 1), 'Descend');
 eigenvectors=V(:,sortOrder); % Eigenvectors
 eigenvalues=D(:,sortOrder);% Eigenvalues
 display(eigenvectors)
@@ -154,11 +150,8 @@ explained = 100*varianceDataPCS./sum(varianceDataPCS);
 display(explained)
 
 % Plot of the PCA
-fig(2) = figure
-plot(eigenvectors(:,1:3))
+figure
+plot(eigenvectors(:,1:3),'Linewidth',1.2)
 legend({'level','slope','curvature'},'Location','Best')
 title('PCA Analysis of Monthly Changes')
 ylabel('Loading')
-
-
-
