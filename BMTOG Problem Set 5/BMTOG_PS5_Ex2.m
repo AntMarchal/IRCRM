@@ -45,7 +45,7 @@ fprintf('\nMonte Carlo Price of the ZCB Bond: %2.5f\n',MC_Price)
 
 %% III. Plots
 
-%figure 
+figure 
 
 subplot(2,1,1); plot(grid,r(:,1:200),'Linewidth',1.5); 
 xlabel('t');    title('Short Rate')
