@@ -10,15 +10,13 @@ close all; clear; clc; format long; warning('off')
 
 
 %% 0. Setup 
-
+% Parameters
 beta = -0.5; b = 0.5*0.02; sigma = 0.01; r_0 = 0.01;
 dt= 0.25; T=30; T0=0;
-
-
 n= T/dt-1;
 t=[0:dt:30]';
 
-%%
+%% 1. Model
 % 
 for i = 1:n
     B(i) = 1/beta * ( exp(beta*t(i)) - 1);
@@ -42,14 +40,9 @@ end
 
 cap=sum(capletPrice)
 
-%% Functions
 
-function capletPrice = caplet(k, f, sigma, r, t, t_)
-d1 = real( ( log(f/k) + sigma^2 * t_/2 ) / (sigma * sqrt(t_) ));
-d2 = real(d1 - sigma * sqrt(t_));
-capletPrice = (f * normcdf(d1) - k * normcdf(d2)) / (1+r)^t;
-end
 
+%% Archive Code
 % function capletPrice = caplet(dt,beta,sigma,P,P_,r,T)
 % 
 % d1=(log(P/(r*P_))+1/(2*beta)*sigma*(exp(beta*dt)-1)*sqrt(exp(2*beta*(T-1)-1)/(2*beta)))...
@@ -59,10 +52,6 @@ end
 % 
 % capletPrice =  (1/dt-r)*P_*(1-normcdf(d2)) - P/dt*(1-normcdf(d1));
 % end
-
-
-
-
 
 % %%
 % %% Setup
