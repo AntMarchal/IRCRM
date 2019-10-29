@@ -69,9 +69,9 @@ for i = 1:120
     A(i) = 1/(4*beta^3) * (sigma^2 *(4*exp(beta*mat(i))-exp(2*beta*mat(i))-2*beta*mat(i)-3));
     P(i) = exp(-A(i)-B(i)*r_0);
 end
+
 % Rswap
 Rswap = (P(1) - P(end)) / (dt*sum(P));
-
 % L
 for i = 1:120
     L(i) = (1/mat(i)) * ( (1/P(i)) - 1);
