@@ -25,11 +25,18 @@ end
 
 mat = [0:dt:T]';
 
-B= 1/beta * ( exp(beta*mat) - 1);
-A= 1/(4*beta^3) * (sigma^2 *(4*exp(beta*mat)-exp(2*beta*mat)-2*beta*mat-3));
+B=1/beta * ( exp(beta*mat) - 1);
+A=(b/abs(beta)-sigma^2/(2*-beta^2))*(B-mat)-(sigma^2*B.^2)/(4*-beta);
+P=exp(A-B.*r);
+P = zeros(120,1);
+A = zeros(120,1);
+B = zeros(120,1);
 
-P = exp(-A-B*r_0);
-R_swap = (P(1) - P(end)) / (T*sum(P));
+for i = 1:120
+    B(i) = -1/k * ( exp(-k*t(i)) - 1);
+    A(i) = 1/(4*beta^3) * ( sigma^2 * (4*exp(beta*t(i)) - exp(2*beta*t(i)) - 2 * beta * t(i) - 3) );
+    P(i) = exp(-A(i) - B(i)*r0);
+end
 for i=2:n+1
     capletPrice(i)=caplet(dt,beta,sigma,P(i),P(i-1),r(i),mat(i));
 end
