@@ -6,7 +6,7 @@
 %======================= OUYANG Tonglin, GIRO Tomas ======================%
 %=========================================================================%
 
-close all; clear; clc; format short; warning('off')
+close all; clear; clc; format long; warning('off')
 
 %% 0. Setup 
 
@@ -45,4 +45,4 @@ K_star = P(T_0,S,r_star);
 % Put Option Price of the Coupon Bond
 Put_CB = dot(CF(2:end),Put_ZCB);
 
-fprintf('\nPrice of the Put Option on the Coupon Bond: %2.4f\n',Put_CB)
+fprintf('\nPrice of the Put Option on the Coupon Bond: %2.5f\n',Put_CB)
