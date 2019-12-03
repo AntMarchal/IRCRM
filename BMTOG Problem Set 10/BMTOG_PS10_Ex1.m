@@ -1,7 +1,7 @@
 %=========================================================================%
 %================= Interest Rate and Credit Risk Models ==================% 
 %============================ Problem Set 10 =============================%
-%============================== Exercise 2 ===============================%
+%============================== Exercise 1 ===============================%
 %=========================================================================%
 %======== BRODARD Lionel, MARCHAL Antoine, TISSOT-DAGUETTE Valentin ======%
 %======================= OUYANG Tonglin, GIRO Tomas ======================%
@@ -28,7 +28,6 @@ Y_R = Y(student==0);
 
 [B_S,dev_S,stats_S] = mnrfit(X_S, 2-Y_S);
 [B_R,dev_R,stats_R] = mnrfit(X_R, 2-Y_R);
-
 
 disp('latex table of the results of 1a)');
 table_res = array2table([B_S, stats_S.se, stats_S.t, stats_S.p,B_R, stats_R.se, stats_R.t, stats_R.p]...
