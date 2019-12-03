@@ -1,2 +1,0 @@
-opts = detectImportOptions('credit.csv')
-T = readtable('credit.csv', 'delimiter', ';');  % skips the first three rows of data
