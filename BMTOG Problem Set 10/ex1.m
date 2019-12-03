@@ -42,11 +42,15 @@ p(B_S, [500 100])
 % classes to obtain the good order of classes in matlab for the
 % confusionmat function.
 disp('Conf mat of student:');
-cm_S = confusionmat(2-Y_S, 2-(p(B_S, X_S)>0.5));
+p_S = p(B_S, X_S)>0.5;
+p_R = p(B_R, X_R)>0.5;
+cm_S = [sum( (Y_S==1).* (p_S==1)) sum((Y_S==0).*(p_S==1)) ;...
+        sum( (Y_S==1).* (p_S==0)) sum((Y_S==0).*(p_S==0)) ];
 cm_S = array2table(cm_S, 'VariableNames',{'Real_1', 'Real_0'}, 'RowNames', {'Predicted_1','Predicted_0'})
 table2latex(cm_S, 'cm_S.tex');
 
 disp('Conf mat of not student:');
-cm_R = confusionmat(2-Y_R, 2-(p(B_R, X_R)>0.5));
+cm_R =  [sum( (Y_R==1).* (p_R==1)) sum((Y_R==0).*(p_R==1)) ;...
+         sum( (Y_R==1).* (p_R==0)) sum((Y_R==0).*(p_R==0)) ];
 cm_R = array2table(cm_R, 'VariableNames',{'Real_1', 'Real_0'}, 'RowNames', {'Predicted_1','Predicted_0'})
 table2latex(cm_R,'cm_R.tex');
