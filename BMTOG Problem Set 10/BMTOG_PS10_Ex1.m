@@ -7,7 +7,7 @@
 %======================= OUYANG Tonglin, GIRO Tomas ======================%
 %=========================================================================%
 
-clear all; clc; rng(0);
+clear; clc; rng(0)
 
 data = readtable('credit.csv', 'delimiter', ';');  % skips the first three rows of data
 data = data(:,2:end); % remove first column
@@ -34,9 +34,6 @@ table_res = array2table([B_S, stats_S.se, stats_S.t, stats_S.p,B_R, stats_R.se, 
     , 'VariableNames',{'beta_S','sigma_S','z_S', 'p_S', 'beta_R','sigma_R','z_R', 'p_R'}...
     , 'RowNames',{'intercept', 'balance', 'income'});
 table_res
-table2latex(table_res, 'RegResults.tex');
-
-%[p(B_R,X_R) Y_R]
 
 %% b)
 disp('Proba of default of the particular student:');
@@ -54,10 +51,9 @@ p_R = p(B_R, X_R)>0.5;
 cm_S = [sum( (Y_S==1).* (p_S==1)) sum((Y_S==0).*(p_S==1)) ;...
         sum( (Y_S==1).* (p_S==0)) sum((Y_S==0).*(p_S==0)) ];
 cm_S = array2table(cm_S, 'VariableNames',{'Real_1', 'Real_0'}, 'RowNames', {'Predicted_1','Predicted_0'})
-table2latex(cm_S, 'cm_S.tex');
 
 disp('Conf mat of not student:');
 cm_R =  [sum( (Y_R==1).* (p_R==1)) sum((Y_R==0).*(p_R==1)) ;...
          sum( (Y_R==1).* (p_R==0)) sum((Y_R==0).*(p_R==0)) ];
 cm_R = array2table(cm_R, 'VariableNames',{'Real_1', 'Real_0'}, 'RowNames', {'Predicted_1','Predicted_0'})
-table2latex(cm_R,'cm_R.tex');
+
