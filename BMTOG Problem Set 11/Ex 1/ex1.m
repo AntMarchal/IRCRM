@@ -13,13 +13,13 @@ T = 5;
 sigma = 0.25;
 dp = ( log(V/B) + ( r + sigma^2/2 ) * T ) / (sigma * sqrt(T) );
 dm = ( log(V/B) + ( r - sigma^2/2 ) * T ) / (sigma * sqrt(T) );
-E = V * normcdf(dp) - exp(-r* T ) * normcdf(dm) * B;
+S_0 = V * normcdf(dp) - exp(-r* T ) * normcdf(dm) * B;
 disp('The value of the equity is: ');
-disp(E);
+disp(S_0);
 
-D = exp(-r*T) * B + V * normcdf(-dp) - exp(-r * T) * normcdf(-dm) * B;
+B_0 = exp(-r*T) * B + V * normcdf(-dp) - exp(-r * T) * normcdf(-dm) * B;
 disp('The value of the debt is: ');
-disp(D);
+disp(B_0);
 
 %% b)
 for L=[0.3 0.6 0.9]
