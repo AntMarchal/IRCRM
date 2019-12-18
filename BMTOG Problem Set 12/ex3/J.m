@@ -1,5 +1,4 @@
 function [res] = J(s)
-global P0 ;
 b = 0.012;
 beta = -0.2;
 sigma = 0.14;
@@ -30,6 +29,6 @@ A = - (2.*b) ./ (sigma .^ 2) .* ...
      );
  
  S = exp( -A -B .* gamma0 );
- res =  S .* (dA + dB .* gamma0) * P0;
+ res =  S .* (dA + dB .* gamma0) .* p0(s);
 end
 

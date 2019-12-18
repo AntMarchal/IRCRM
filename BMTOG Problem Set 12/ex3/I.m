@@ -1,5 +1,4 @@
 function [res] = I(T)
-global P0;
 tau = T;
 b = 0.012;
 beta = -0.2;
@@ -17,6 +16,6 @@ A = - (2.*b) ./ (sigma .^ 2) .* ...
  
  
  S = exp( -A -B .* gamma0 );
- res = S * P0;
+ res = S * p0(T);
 end
 

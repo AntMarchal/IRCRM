@@ -1,8 +1,7 @@
 clear all
 %% b) 
-global r P0 ; % r is the initial value for r; P0 is the value of the riskless bond
+global r ; % r is the initial value for r
 r = 0.077/0.96; % initial value for r (not specified in problem set)
-P0 = p0(1);
 
 delta = 0.5;
 
@@ -13,7 +12,6 @@ fprintf('P1:  %f\n', P1)
 
 
 %% c)
-P0 = p0(5); % we change the value of P0 as we have a new maturity
 Jhandle = @(x) J(x);
 JJ = quadgk(Jhandle,0,5);
 denom = 0;  % we compute the denominator of the formula on page 677
